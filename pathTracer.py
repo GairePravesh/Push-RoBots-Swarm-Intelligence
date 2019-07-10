@@ -3,6 +3,9 @@ Pravesh Gaire
 7/6/2019
 Finds the shortest path from a point to another point in mxn grid 
 A* Algorithm
+
+TO DO:
+Neighbours needs to be generalized
 '''
 # Func to check if a cell is valid or not
 def isValid(x, y):
@@ -26,31 +29,39 @@ COL = 10
 MAP = [ 
         [ 1, 0, 1, 1, 1, 1, 0, 1, 1, 1 ], 
         [ 1, 0, 1, 0, 1, 1, 1, 0, 1, 1 ], 
-        [ 1, 0, 1, 0, 1, 1, 1, 1, 1, 1 ], 
-        [ 1, 0, 1, 0, 1, 0, 1, 0, 0, 1 ], 
+        [ 1, 0, 0, 0, 1, 1, 1, 1, 1, 1 ], 
+        [ 1, 1, 1, 0, 1, 0, 1, 0, 0, 1 ], 
         [ 1, 0, 1, 0, 1, 1, 1, 0, 1, 0 ], 
         [ 1, 0, 1, 1, 1, 1, 0, 1, 0, 0 ], 
         [ 1, 0, 1, 0, 0, 1, 0, 0, 0, 1 ], 
-        [ 1, 0, 1, 1, 1, 1, 1, 1, 1, 1 ], 
+        [ 1, 0, 1, 0, 1, 1, 1, 1, 1, 1 ], 
         [ 1, 1, 1, 0, 0, 0, 1, 0, 0, 1 ], 
         [ 0, 0, 1, 0, 1, 0, 0, 0, 0, 1 ], 
 ]
 # Source
-SX, SY = 0, 0
+SX, SY = 3, 4
 # Destination
 DX, DY = 0, 9
+
+destinationFound = False
+validity = True
 
 # Check if the given inputs are valid for various conditions
 if not isValid(SX, SY):    
     print("Source is not valid")
+    validity = False
 if not isValid(DX, DY):
     print("Destination is not valid")
+    validity = False
 if isBlocked(SX, SY):
     print("Source is blocked")
+    validity = False
 if isBlocked(DX, DY):
     print("Destination is blocked")
+    validity = False
 if ((SX, SY) == (DX, DY)):
     print("Source and Destination are at same")
+    validity = False
 
 # Closed list
 closedList = [[0 for j in range(COL)] for i in range(ROW)]
@@ -74,9 +85,7 @@ cellDetails[SX][SY]['PY'] = SY
 openList = []
 openList.append([0, SX, SY])
 
-destinationFound = False
-
-while(openList):
+while(openList and validity):
     parent = min(openList)
     #parent = openList.pop()
     openList.remove(parent)
@@ -195,7 +204,8 @@ while(openList):
                 cellDetails[parent[1]][parent[2] - 1]['h'] = newH
                 cellDetails[parent[1]][parent[2] - 1]['PX'] = parent[1]
                 cellDetails[parent[1]][parent[2] - 1]['PY'] = parent[2]
-# Tracing the path                    
+# Tracing the path   
+tracedPath = [(SX, SY), (DX, DY)]                 
 if not destinationFound:
     print("Sorry, couldnot find the destination")
 else:
@@ -203,8 +213,13 @@ else:
     row = cellDetails[DX][DY]['PX']
     col = cellDetails[DX][DY]['PY']
     while(not (row == SX and col == SY)):
-        print(row, col)
+        tracedPath.insert(1, (row, col))
         x = cellDetails[row][col]['PX']
         y = cellDetails[row][col]['PY']
         row, col = x, y
     
+#print(*tracedPath)
+
+from Point_Direction import directions
+
+print(directions(tracedPath))
