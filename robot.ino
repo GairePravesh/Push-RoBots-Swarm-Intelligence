@@ -16,7 +16,7 @@ void setup(){
     pinMode(motor1sp, OUTPUT);
     pinMode(motor2sp, OUTPUT);
 
-    calibrateSpeed(180,180);
+    calibrateSpeed(200,160);
 
     Serial.begin(9600);
 
@@ -108,7 +108,7 @@ bool nodeL(){
 
 void anticlockwise(){
   forward();
-  delay(200);
+  delay(150);
   do{
     left();
   }while(IRL() == 0);
@@ -116,7 +116,7 @@ void anticlockwise(){
 
 void clockwise(){
   forward();
-  delay(200);
+  delay(150);
   do{
     right();
   }while(IRR() == 0);
@@ -124,7 +124,7 @@ void clockwise(){
 
 void turn(){
   backward();
-  delay(300);
+  delay(250);
   do{
     right();
   }while(IRR() == 0);
@@ -134,6 +134,7 @@ void loop(){
   if (millis() - timer > 1000){
     if(nodeL() || nodeT()){
       while(Serial.available() <= 0){
+        Serial.write("I need direction");
         wait();
       }
       command = Serial.read();
@@ -150,6 +151,7 @@ void loop(){
           break;
         default:
           forward();
+          delay(100);
       }
     }
   }
