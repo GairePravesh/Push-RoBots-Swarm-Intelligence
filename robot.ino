@@ -2,27 +2,10 @@
 int motor1h = 10, motor1l = 8, motor2h = 7, motor2l = 5;    // Motors direction controll pins
 int irLL = A4, irL = A5, irR = A6, irRR = A7;   // IR input pins
 int motor1sp = 6, motor2sp = 9; // Motors speed control pins
-int command = 0;
+String command;
 int threshold = 350;
 unsigned int timer = 0;
-
-void setup(){
-    
-    pinMode(motor1h, OUTPUT);
-    pinMode(motor1l, OUTPUT);
-    pinMode(motor2h, OUTPUT);
-    pinMode(motor2l, OUTPUT);
-    
-    pinMode(motor1sp, OUTPUT);
-    pinMode(motor2sp, OUTPUT);
-
-    calibrateSpeed(200,160);
-
-    Serial.begin(9600);
-
-    wait();
-    delay(2000);
-}
+int count = 0;
 
 void calibrateSpeed(int m1, int m2){
   analogWrite(motor1sp, m1);
@@ -124,35 +107,56 @@ void clockwise(){
 
 void turn(){
   backward();
-  delay(250);
+  delay(350);
   do{
     right();
   }while(IRR() == 0);
 }
 
+void choice(){
+  switch (command.charAt(count)){
+    case 97:
+      anticlockwise();
+      break;
+    case 99:
+      clockwise();
+      break;
+    case 116:
+      turn();
+      break;
+    default:
+      forward();
+      delay(100);
+  }
+  count ++;
+}
+
+void setup(){
+    pinMode(motor1h, OUTPUT);
+    pinMode(motor1l, OUTPUT);
+    pinMode(motor2h, OUTPUT);
+    pinMode(motor2l, OUTPUT);
+    
+    pinMode(motor1sp, OUTPUT);
+    pinMode(motor2sp, OUTPUT);
+
+    calibrateSpeed(200,160);
+
+    Serial.begin(9600);
+
+    while(Serial.available() <= 0){
+      Serial.write("I need direction");
+      wait();
+    }
+    command = Serial.read();    
+    choice();
+}
+
 void loop(){
   if (millis() - timer > 1000){
     if(nodeL() || nodeT()){
-      while(Serial.available() <= 0){
-        Serial.write("I need direction");
-        wait();
-      }
-      command = Serial.read();
       timer = millis();
-      switch (command){
-        case 97:
-          anticlockwise();
-          break;
-        case 99:
-          clockwise();
-          break;
-        case 116:
-          turn();
-          break;
-        default:
-          forward();
-          delay(100);
-      }
+      choice();
     }
   }
   if(IRR()){
