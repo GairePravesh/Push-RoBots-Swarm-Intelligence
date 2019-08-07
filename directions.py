@@ -25,30 +25,28 @@ def directions(tracedPath):
     prev = 'PX'
     results = []
     for ele in inputs:
-        #print(prev + ' ' + ele)
-        #print(cases[prev + ' ' + ele])
         results.append(cases[prev + ' ' + ele])
         prev = ele
     return results
 
 cases = {
-    'PX PX':'F',
-    'PX NX':'R180 F',
-    'PX PY':'A90 F',
-    'PX NY':'C90 F',
+    'PX PX':'f',
+    'PX NX':'t',
+    'PX PY':'a',
+    'PX NY':'c',
 
-    'NX NX':'F',
-    'NX PX':'R180 F',
-    'NX PY':'C90 F',
-    'NX NY':'A90 F',
+    'NX NX':'f',
+    'NX PX':'t',
+    'NX PY':'c',
+    'NX NY':'a',
 
-    'PY PY':'F',
-    'PY NX':'A90 F',
-    'PY NY':'R180 F',
-    'PY PX':'C90 F',
+    'PY PY':'f',
+    'PY NX':'a',
+    'PY NY':'t',
+    'PY PX':'c',
 
-    'NY NY':'F',
-    'NY NX':'C90 F',
-    'PY NY':'R180 F',
-    'NY PX':'A90 F',
+    'NY NY':'f',
+    'NY NX':'c',
+    'PY NY':'t',
+    'NY PX':'a',
 }

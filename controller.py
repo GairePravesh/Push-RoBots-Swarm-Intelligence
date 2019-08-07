@@ -1,32 +1,5 @@
-# import serial
-
-# old = serial.Serial()
-# old.baudrate = 9600
-# old.port = 'COM14'
-
-# new = serial.Serial()
-# new.baudrate = 9600
-# new.port = 'COM11'
-
-# while(True):
-#     if(not old.is_open or not new.is_open):
-#         try:
-#             old.open()
-#             new.open()
-#         except:
-#             print("Can't connect to bluetooth")   
-#             old.close()
-#             new.close()
-
-#     elif(old.inWaiting() and new.inWaiting()):
-#         old.read()
-#         new.read()
-#         old.write(b"c")
-#         new.write(b"c")
-
-# old.close()
-# new.close()
-
+import serial
+import numpy
 from directions import directions
 
 # Func to check if a cell is valid or not
@@ -63,7 +36,7 @@ def tracer(source, dest):
         validity = False
     if ((SX, SY) == (DX, DY)):
         print("Source and Destination are at same")
-        validity = False
+        return [(SX, SY)]
 
      # Closed list
     closedList = [[0 for j in range(COL)] for i in range(ROW)]
@@ -88,9 +61,10 @@ def tracer(source, dest):
 
     openList.append([0, SX, SY])
 
-    while(openList and validity and not destinationFound):
+    while(openList and validity):
+        
         parent = min(openList)
-        #parent = openList.pop()
+        # parent = openList.pop()
         openList.remove(parent)
         closedList[parent[1]][parent[2]] = True # add to closed list
 
@@ -100,34 +74,113 @@ def tracer(source, dest):
         # E -->  East        (i, j+1) 
         # W -->  West        (i, j-1) 
 
-        for i in range(4):
-            if (isValid(parent[1] + neighbours[i][0], parent[2] + neighbours[i][1])):
+        # North
+        # Check if the cell is valid
+        if (isValid(parent[1] - 1, parent[2])):
             # Check if destination is reached
-                if((parent[1] + neighbours[i][0], parent[2] + neighbours[i][1]) == (DX, DY)):
-                    cellDetails[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]['PX'] = parent[1]
-                    cellDetails[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]['PY'] = parent[2]
-                    destinationFound = True
-                    break
-                # check if it is already in closed list or blocked
-                elif ((not closedList[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]) and (not isBlocked(parent[1] + neighbours[i][0], parent[2] + neighbours[i][1]))):
-                    # find new values
-                    newG = cellDetails[parent[1]][parent[2]]['g'] + 1.0
-                    newH = calculateH(parent[1] + neighbours[i][0], parent[2] + neighbours[i][1])
-                    newF = newG + newH
-                    # check if it is in open list
-                    # if it is in open list compare and replace if it is better
-                    # if it is not in open list, add it and details
-                    if ((cellDetails[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]['f'] == float('inf')) or (cellDetails[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]['f'] > newF)):
-                        openList.append([newF, parent[1] + neighbours[i][0], parent[2] + neighbours[i][1]])
-                        cellDetails[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]['f'] = newF
-                        cellDetails[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]['g'] = newG
-                        cellDetails[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]['h'] = newH
-                        cellDetails[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]['PX'] = parent[1]
-                        cellDetails[parent[1] + neighbours[i][0]][parent[2] + neighbours[i][1]]['PY'] = parent[2]
+            if((parent[1] - 1, parent[2]) == (DX, DY)):
+                cellDetails[parent[1] - 1][parent[2]]['PX'] = parent[1]
+                cellDetails[parent[1] - 1][parent[2]]['PY'] = parent[2]
+                destinationFound = True
+                break
+            # check if it is already in closed list or blocked
+            elif ((not closedList[parent[1] - 1][parent[2]]) and (not isBlocked(parent[1] - 1, parent[2]))):
+                # find new values
+                newG = cellDetails[parent[1]][parent[2]]['g'] + 1.0
+                newH = calculateH(parent[1] - 1, parent[2])
+                newF = newG + newH
+                # check if it is in open list
+                # if it is in open list compare and replace if it is better
+                # if it is not in open list, add it and details
+                if ((cellDetails[parent[1] - 1][parent[2]]['f'] == float('inf')) or (cellDetails[parent[1] - 1][parent[2]]['f'] > newF)):
+                    openList.append([newF, parent[1] - 1, parent[2]])
+                    cellDetails[parent[1] - 1][parent[2]]['f'] = newF
+                    cellDetails[parent[1] - 1][parent[2]]['g'] = newG
+                    cellDetails[parent[1] - 1][parent[2]]['h'] = newH
+                    cellDetails[parent[1] - 1][parent[2]]['PX'] = parent[1]
+                    cellDetails[parent[1] - 1][parent[2]]['PY'] = parent[2]
 
-    tracedPath = []                 
-                        
+        # South
+        # Check if the cell is valid
+        if (isValid(parent[1] + 1, parent[2])):
+            # Check if destination is reached
+            if((parent[1] + 1, parent[2]) == (DX, DY)):
+                cellDetails[parent[1] + 1][parent[2]]['PX'] = parent[1]
+                cellDetails[parent[1] + 1][parent[2]]['PY'] = parent[2]
+                destinationFound = True
+                break
+            # check if it is already in closed list or blocked
+            elif ((not closedList[parent[1] + 1][parent[2]]) and (not isBlocked(parent[1] + 1, parent[2]))):
+                # find new values
+                newG = cellDetails[parent[1]][parent[2]]['g'] + 1.0
+                newH = calculateH(parent[1] + 1, parent[2])
+                newF = newG + newH
+                # check if it is in open list
+                # if it is in open list compare and replace if it is better
+                # if it is not in open list, add it and details
+                if ((cellDetails[parent[1] + 1][parent[2]]['f'] == float('inf')) or (cellDetails[parent[1] + 1][parent[2]]['f'] > newF)):
+                    openList.append([newF, parent[1] + 1, parent[2]])
+                    cellDetails[parent[1] + 1][parent[2]]['f'] = newF
+                    cellDetails[parent[1] + 1][parent[2]]['g'] = newG
+                    cellDetails[parent[1] + 1][parent[2]]['h'] = newH
+                    cellDetails[parent[1] + 1][parent[2]]['PX'] = parent[1]
+                    cellDetails[parent[1] + 1][parent[2]]['PY'] = parent[2]
+                    
+        # East
+        # Check if the cell is valid
+        if (isValid(parent[1], parent[2] + 1)):
+            # Check if destination is reached
+            if((parent[1], parent[2] + 1) == (DX, DY)):
+                cellDetails[parent[1]][parent[2] + 1]['PX'] = parent[1]
+                cellDetails[parent[1]][parent[2] + 1]['PY'] = parent[2]
+                destinationFound = True
+                break
+            # check if it is already in closed list or blocked
+            elif ((not closedList[parent[1]][parent[2] + 1]) and (not isBlocked(parent[1], parent[2] + 1))):
+                # find new values
+                newG = cellDetails[parent[1]][parent[2]]['g'] + 1.0
+                newH = calculateH(parent[1], parent[2] + 1)
+                newF = newG + newH
+                # check if it is in open list
+                # if it is in open list compare and replace if it is better
+                # if it is not in open list, add it and details
+                if ((cellDetails[parent[1]][parent[2] + 1]['f'] == float('inf')) or (cellDetails[parent[1]][parent[2] + 1]['f'] > newF)):
+                    openList.append([newF, parent[1], parent[2] + 1])
+                    cellDetails[parent[1]][parent[2] + 1]['f'] = newF
+                    cellDetails[parent[1]][parent[2] + 1]['g'] = newG
+                    cellDetails[parent[1]][parent[2] + 1]['h'] = newH
+                    cellDetails[parent[1]][parent[2] + 1]['PX'] = parent[1]
+                    cellDetails[parent[1]][parent[2] + 1]['PY'] = parent[2]
+                    
+        # West
+        # Check if the cell is valid
+        if (isValid(parent[1], parent[2] - 1)):
+            # Check if destination is reached
+            if((parent[1], parent[2] - 1) == (DX, DY)):
+                cellDetails[parent[1]][parent[2] - 1]['PX'] = parent[1]
+                cellDetails[parent[1]][parent[2] - 1]['PY'] = parent[2]
+                destinationFound = True
+                break
+            # check if it is already in closed list or blocked
+            elif ((not closedList[parent[1]][parent[2] - 1]) and (not isBlocked(parent[1], parent[2] - 1))):
+                # find new values
+                newG = cellDetails[parent[1]][parent[2]]['g'] + 1.0 
+                newH = calculateH(parent[1], parent[2] - 1)
+                newF = newG + newH
+                # check if it is in open list
+                # if it is in open list compare and replace if it is better
+                # if it is not in open list, add it and details
+                if ((cellDetails[parent[1]][parent[2] - 1]['f'] == float('inf')) or (cellDetails[parent[1]][parent[2] - 1]['f'] > newF)):
+                    openList.append([newF, parent[1], parent[2] - 1])
+                    cellDetails[parent[1]][parent[2] - 1]['f'] = newF
+                    cellDetails[parent[1]][parent[2] - 1]['g'] = newG
+                    cellDetails[parent[1]][parent[2] - 1]['h'] = newH
+                    cellDetails[parent[1]][parent[2] - 1]['PX'] = parent[1]
+                    cellDetails[parent[1]][parent[2] - 1]['PY'] = parent[2]
+                       
+                            
     if destinationFound:
+        tracedPath = [] 
         row = cellDetails[DX][DY]['PX']
         col = cellDetails[DX][DY]['PY']
         while(not (row == SX and col == SY)):
@@ -135,39 +188,79 @@ def tracer(source, dest):
             x = cellDetails[row][col]['PX']
             y = cellDetails[row][col]['PY']
             row, col = x, y
-    return [(SX,SY)] + tracedPath[::-1] +[(DX,DY)]
-        
+        return [(SX,SY)] + tracedPath[::-1] +[(DX,DY)]
+    else:
+        return []
 
-if __name__ == "__main__":
+def updateMap(toChange):
+    maap = [[1,1,1],[1,1,1],[1,1,1],[1,1,1]]
+    for i in range(len(toChange)):
+        maap[toChange[i][0]][toChange[i][1]] = 0
+    return maap
 
-    # Grid Size
-    ROW = 4
-    COL = 3
+# Grid Size
+ROW = 4
+COL = 3
 
-    MAP = [
-        [1, 1, 1],
-        [1, 1, 1],
-        [1, 1, 1],
-        [1, 1, 1],
-    ]
+MAP = [
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+    [1, 1, 1],
+]
 
-    SX, SY = 0, 0
-    DX, DY = 0, 0
+SX, SY = 0, 0
+DX, DY = 0, 0
 
-    neighbours = [(-1, 0), (1, 0), (0, 1), (0, -1)]
-     
-    source = (1, 1)
-    dest = (3, 2)
-    robo1 = (0, 0)
-    robo2 = (0, 2)
+source = (0,0)
+dest = (3,0)
+robo1 = (0, 2)
+robo2 = (0, 2)
+robo = [robo1, robo2]
 
-    source_to_dest = directions(tracer(source, dest))
-    print(source_to_dest)
+source_to_dest = (gen for gen in tracer(source, dest))
 
-    robo1_to_source = directions(tracer(robo1, source))
-    print(robo1_to_source)
-    
-    robo2_to_source = directions(tracer(robo2, source))
-    print(robo2_to_source)
+pre = next(source_to_dest)
+nex = next(source_to_dest)
+diff = tuple(numpy.subtract(pre, nex))
 
+path = [[pre, nex]]
+i = 0
 
+pre = nex
+
+while(True):
+    try:
+        nex = next(source_to_dest)
+    except:
+        break
+    if diff == tuple(numpy.subtract(pre, nex)):
+        path[i].append(nex)
+    else:
+        i += 1
+        diff = tuple(numpy.subtract(pre, nex))
+        path.append([pre])
+        path[i].append(nex)
+    pre = nex
+for i in range(len(path)):
+    prevNode = tuple(numpy.add(numpy.subtract(path[i][0], path[i][1]), path[i][0]))
+    toChange = []
+    toChange.append(path[i][0])
+    for r in robo:
+        if r != robo[i]:
+            toChange.append(r)
+    MAP = updateMap(toChange)
+    temp = tracer(robo[i], prevNode)
+    if temp == []:
+        print("Not Possible")
+        break
+    temp += path[i]
+    print("Path for Robo" + str(i))
+    print(temp)
+    robo[i] = temp[-2]
+    source = temp[-1]
+
+# temp = tracer(robo2, (1,2))
+# temp += path[1]
+# print("Path for Robo2")
+# print(temp)
