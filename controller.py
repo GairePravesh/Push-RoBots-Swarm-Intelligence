@@ -212,10 +212,10 @@ MAP = [
 SX, SY = 0, 0
 DX, DY = 0, 0
 
-source = (0,0)
+source = (2,1)
 dest = (3,0)
 robo1 = (0, 2)
-robo2 = (0, 2)
+robo2 = (0, 1)
 robo = [robo1, robo2]
 
 source_to_dest = (gen for gen in tracer(source, dest))
@@ -242,6 +242,9 @@ while(True):
         path.append([pre])
         path[i].append(nex)
     pre = nex
+
+swarmPaths = []
+
 for i in range(len(path)):
     prevNode = tuple(numpy.add(numpy.subtract(path[i][0], path[i][1]), path[i][0]))
     toChange = []
@@ -255,12 +258,40 @@ for i in range(len(path)):
         print("Not Possible")
         break
     temp += path[i]
-    print("Path for Robo" + str(i))
-    print(temp)
+    # print("Path for Robo" + str(i))
+    # print(temp)
     robo[i] = temp[-2]
     source = temp[-1]
 
-# temp = tracer(robo2, (1,2))
-# temp += path[1]
-# print("Path for Robo2")
-# print(temp)
+    swarmPaths.append(' '.join(directions(temp)))
+print(swarmPaths)
+
+
+robo0 = serial.Serial()
+robo1 = serial.Serial()
+
+robo0.BaudRate = 9600
+robo0.port = "COM14"
+robo1.BaudRate = 9600
+robo1.port = "COM11"
+
+while(True):
+    try:
+        if not robo0.is_open or not robo0.is_open:
+        robo0.open()
+        robo1.open()
+    except:
+        print("Couldnot Open Port")
+    else:
+        if robo0.in_waiting and robo1.in_waiting:
+            robo0.read()
+            robo1.read()
+
+            robo0.write(swarmPaths[0])
+            robo1.write(swarmPaths[1])
+            break
+            
+robo0.close()
+robo1.close()
+
+
