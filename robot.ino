@@ -6,6 +6,7 @@ String command;
 int threshold = 350;
 unsigned int timer = 0;
 int count = 0;
+char comm;
 
 void calibrateSpeed(int m1, int m2){
   analogWrite(motor1sp, m1);
@@ -91,7 +92,7 @@ bool nodeL(){
 
 void anticlockwise(){
   forward();
-  delay(150);
+  delay(250);
   do{
     left();
   }while(IRL() == 0);
@@ -99,7 +100,7 @@ void anticlockwise(){
 
 void clockwise(){
   forward();
-  delay(150);
+  delay(250);
   do{
     right();
   }while(IRR() == 0);
@@ -111,24 +112,39 @@ void turn(){
   do{
     right();
   }while(IRR() == 0);
+  Serial.write("1");
 }
 
 void choice(){
-  switch (command.charAt(count)){
+//  switch (command.charAt(count)){
+  switch (comm){
     case 97:
       anticlockwise();
+      Serial.write("a");
       break;
     case 99:
       clockwise();
+      Serial.write("c");
       break;
     case 116:
       turn();
+      Serial.write("t");
       break;
     default:
       forward();
+      Serial.write("f");
       delay(100);
   }
   count ++;
+  count ++;
+}
+
+void askData(){
+  wait();
+  Serial.write("w");
+  while(Serial.available() <= 0){
+  }
+  comm = Serial.read();    
 }
 
 void setup(){
@@ -140,15 +156,12 @@ void setup(){
     pinMode(motor1sp, OUTPUT);
     pinMode(motor2sp, OUTPUT);
 
-    calibrateSpeed(200,160);
-
+    calibrateSpeed(200,200);
+//    calibrateSpeed(200,160);
     Serial.begin(9600);
-
-    while(Serial.available() <= 0){
-      Serial.write("I need direction");
-      wait();
-    }
-    command = Serial.read();    
+    wait();
+    delay(1000);
+    askData();
     choice();
 }
 
@@ -156,16 +169,17 @@ void loop(){
   if (millis() - timer > 1000){
     if(nodeL() || nodeT()){
       timer = millis();
+      askData();
       choice();
     }
   }
-  if(IRR()){
-    right();
-  }
-  else if(IRL()){
-    left();
-  }    
-  else{
-    forward();
-  }
+     if(IRR()){
+      right();
+    }
+    else if(IRL()){
+      left();
+    }    
+    else{
+      forward();
+    } 
 }

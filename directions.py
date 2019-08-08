@@ -47,6 +47,6 @@ cases = {
 
     'NY NY':'f',
     'NY NX':'c',
-    'PY NY':'t',
+    'NY PY':'t',
     'NY PX':'a',
 }

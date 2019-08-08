@@ -212,86 +212,89 @@ MAP = [
 SX, SY = 0, 0
 DX, DY = 0, 0
 
-source = (2,1)
-dest = (3,0)
-robo1 = (0, 2)
-robo2 = (0, 1)
-robo = [robo1, robo2]
+conversionData = {'0':(0,0),'1':(0,1),'2':(0,2),'3':(1,0),'4':(1,1),'5':(1,2),'6':(2,0),'7':(2,1),'8':(2,2),'9':(3,0),'10':(3,1),'11':(3,2),}
+swarmPaths = []
+swarmDirecs = []
+def init(datas):
+    source = conversionData[datas[0]]
+    dest = conversionData[datas[1]]
+    robo1 = conversionData[datas[2]]
+    robo2 = conversionData[datas[3]]
+    robo = [robo1, robo2]
+    src_dest = tracer(source, dest)
+    source_to_dest = (gen for gen in src_dest)
 
-source_to_dest = (gen for gen in tracer(source, dest))
+    pre = next(source_to_dest)
+    nex = next(source_to_dest)
+    diff = tuple(numpy.subtract(pre, nex))
 
-pre = next(source_to_dest)
-nex = next(source_to_dest)
-diff = tuple(numpy.subtract(pre, nex))
+    path = [[pre, nex]]
+    i = 0
 
-path = [[pre, nex]]
-i = 0
-
-pre = nex
-
-while(True):
-    try:
-        nex = next(source_to_dest)
-    except:
-        break
-    if diff == tuple(numpy.subtract(pre, nex)):
-        path[i].append(nex)
-    else:
-        i += 1
-        diff = tuple(numpy.subtract(pre, nex))
-        path.append([pre])
-        path[i].append(nex)
     pre = nex
 
-swarmPaths = []
-
-for i in range(len(path)):
-    prevNode = tuple(numpy.add(numpy.subtract(path[i][0], path[i][1]), path[i][0]))
-    toChange = []
-    toChange.append(path[i][0])
-    for r in robo:
-        if r != robo[i]:
-            toChange.append(r)
-    MAP = updateMap(toChange)
-    temp = tracer(robo[i], prevNode)
-    if temp == []:
-        print("Not Possible")
-        break
-    temp += path[i]
-    # print("Path for Robo" + str(i))
-    # print(temp)
-    robo[i] = temp[-2]
-    source = temp[-1]
-
-    swarmPaths.append(' '.join(directions(temp)))
-print(swarmPaths)
-
-
-robo0 = serial.Serial()
-robo1 = serial.Serial()
-
-robo0.BaudRate = 9600
-robo0.port = "COM14"
-robo1.BaudRate = 9600
-robo1.port = "COM11"
-
-while(True):
-    try:
-        if not robo0.is_open or not robo0.is_open:
-        robo0.open()
-        robo1.open()
-    except:
-        print("Couldnot Open Port")
-    else:
-        if robo0.in_waiting and robo1.in_waiting:
-            robo0.read()
-            robo1.read()
-
-            robo0.write(swarmPaths[0])
-            robo1.write(swarmPaths[1])
+    while(True):
+        try:
+            nex = next(source_to_dest)
+        except:
             break
+        if diff == tuple(numpy.subtract(pre, nex)):
+            path[i].append(nex)
+        else:
+            i += 1
+            diff = tuple(numpy.subtract(pre, nex))
+            path.append([pre])
+            path[i].append(nex)
+        pre = nex
+
+    for i in range(len(path)):
+        prevNode = tuple(numpy.add(numpy.subtract(path[i][0], path[i][1]), path[i][0]))
+        toChange = []
+        toChange.append(path[i][0])
+        for r in robo:
+            if r != robo[i]:
+                toChange.append(r)
+        MAP = updateMap(toChange)
+        temp = tracer(robo[i], prevNode)
+        if temp == []:
+            print("Not Possible")
+            break
+        temp += path[i]
+        # print("Path for Robo" + str(i))
+        # print(temp)
+        robo[i] = temp[-2]
+        source = temp[-1]
+        swarmPaths.append(temp)
+        swarmDirecs.append(' '.join(directions(temp)))
+    swarmPaths.append(src_dest)
+    return swarmPaths, swarmDirecs
+
+
+# robo0 = serial.Serial()
+# robo1 = serial.Serial()
+
+# robo0.BaudRate = 9600
+# robo0.port = "COM14"
+# robo1.BaudRate = 9600
+# robo1.port = "COM11"
+
+# while(True):
+#     try:
+#         if not robo0.is_open or not robo0.is_open:
+#         robo0.open()
+#         robo1.open()
+#     except:
+#         print("Couldnot Open Port")
+#     else:
+#         if robo0.in_waiting and robo1.in_waiting:
+#             robo0.read()
+#             robo1.read()
+
+#             robo0.write(swarmPaths[0])
+#             robo1.write(swarmPaths[1])
+#             break
             
-robo0.close()
-robo1.close()
+# robo0.close()
+# robo1.close()
 
 
